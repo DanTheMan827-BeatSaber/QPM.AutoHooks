@@ -143,6 +143,7 @@ jobs:
           qpm dependency remove libil2cpp
           qpm dependency remove flamingo
           qpm dependency add -v "=${{ matrix.mods.version }}" beatsaber-hook
+          qpm dependency add --additional-data "$ADDITIONAL_DATA" And64InlineHook
 
           if [[ "${{ matrix.mods.version }}" < "6.3.0" ]]; then
             qpm dependency add --additional-data "$ADDITIONAL_DATA" paper
@@ -150,6 +151,7 @@ jobs:
             qpm dependency add --additional-data "$ADDITIONAL_DATA" paper2_scotland2
 
             if version_ge "${{ matrix.mods.version }}" "7.0.0"; then
+              qpm dependency remove And64InlineHook
               qpm dependency add --additional-data "$ADDITIONAL_DATA" libil2cpp
               qpm dependency add --additional-data "$ADDITIONAL_DATA" flamingo
             fi
