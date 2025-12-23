@@ -153,6 +153,7 @@ jobs:
           if version_ge "${{ matrix.mods.version }}" "7.0.0"; then
             qpm dependency add --additional-data "$ADDITIONAL_DATA" libil2cpp
             qpm dependency add --additional-data "$ADDITIONAL_DATA" flamingo
+            qpm dependency add --additional-data "$ADDITIONAL_DATA" capstone
             echo 'add_compile_definitions(UNITY_6)' >> ./cmake/targets/quest.cmake
           else
             qpm dependency add --additional-data "$ADDITIONAL_DATA" And64InlineHook
@@ -181,6 +182,7 @@ jobs:
           qpm dependency remove paper2_scotland
           qpm dependency remove libil2cpp
           qpm dependency remove flamingo
+          qpm dependency remove capstone
           qpm restore
 
       - name: Configure GitHub Bot User
