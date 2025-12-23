@@ -127,7 +127,7 @@ jobs:
           cache: true
           version: ${{ steps.version.outputs.version}}
 
-      - name: Build & Create Qmod
+      - name: Add / Restore Dependencies
         if: steps.tag_exists.outputs.exists == 'false'
         run: |
           ADDITIONAL_DATA='{"includeQmod": false, "private": true}'
@@ -158,6 +158,21 @@ jobs:
           fi
 
           qpm restore
+
+      - name: Create Hooking
+        if: steps.tag_exists.outputs.exists == 'false'
+        run: |
+          qpm s make-hooking
+          cat ./shared/hooks.hpp
+
+      - name: Create Qmod
+        if: steps.tag_exists.outputs.exists == 'false'
+        run: |
+          qpm s qmod
+
+      - name: Cleanup
+        if: steps.tag_exists.outputs.exists == 'false'
+        run: |
           qpm s make-hooking
           qpm s qmod
           qpm dependency remove paper
