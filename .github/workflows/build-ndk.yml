@@ -131,6 +131,10 @@ jobs:
         if: steps.tag_exists.outputs.exists == 'false'
         run: |
           ADDITIONAL_DATA='{"includeQmod": false, "private": true}'
+          
+          version_ge() {
+            [[ "$(printf '%s\n%s\n' "$1" "$2" | sort -V | head -n1)" == "$2" ]]
+          }
 
           qpm clear
           qpm dependency remove beatsaber-hook
@@ -145,7 +149,7 @@ jobs:
           else
             qpm dependency add --additional-data "$ADDITIONAL_DATA" paper2_scotland2
 
-            if [[ "${{ matrix.mods.version }}" >= "7.0.0" ]]; then
+            if version_ge "${{ matrix.mods.version }}" "7.0.0"; then
               qpm dependency add --additional-data "$ADDITIONAL_DATA" libil2cpp
               qpm dependency add --additional-data "$ADDITIONAL_DATA" flamingo
             fi
