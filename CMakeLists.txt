@@ -43,6 +43,7 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/strip.cmake)
 project( autohooks
         VERSION ${PACKAGE_VERSION})
 
+add_compile_definitions(UNITY_6)
 add_compile_definitions(MOD_ID="${CMAKE_PROJECT_NAME}")
 add_compile_definitions(VERSION="${CMAKE_PROJECT_VERSION}")
 
