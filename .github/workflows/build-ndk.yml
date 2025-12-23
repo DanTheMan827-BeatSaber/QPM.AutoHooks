@@ -136,12 +136,19 @@ jobs:
           qpm dependency remove beatsaber-hook
           qpm dependency remove paper
           qpm dependency remove paper2_scotland
+          qpm dependency remove libil2cpp
+          qpm dependency remove flamingo
           qpm dependency add -v "=${{ matrix.mods.version }}" beatsaber-hook
 
           if [[ "${{ matrix.mods.version }}" < "6.3.0" ]]; then
             qpm dependency add --additional-data "$ADDITIONAL_DATA" paper
           else
             qpm dependency add --additional-data "$ADDITIONAL_DATA" paper2_scotland2
+
+            if [[ "${{ matrix.mods.version }}" >= "7.0.0" ]]; then
+              qpm dependency add --additional-data "$ADDITIONAL_DATA" libil2cpp
+              qpm dependency add --additional-data "$ADDITIONAL_DATA" flamingo
+            fi
           fi
 
           qpm restore
@@ -149,6 +156,8 @@ jobs:
           qpm s qmod
           qpm dependency remove paper
           qpm dependency remove paper2_scotland
+          qpm dependency remove libil2cpp
+          qpm dependency remove flamingo
           qpm restore
 
       - name: Configure GitHub Bot User
