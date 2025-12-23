@@ -153,8 +153,10 @@ jobs:
           if version_ge "${{ matrix.mods.version }}" "7.0.0"; then
             qpm dependency add --additional-data "$ADDITIONAL_DATA" libil2cpp
             qpm dependency add --additional-data "$ADDITIONAL_DATA" flamingo
+            echo 'add_compile_definitions(UNITY_6)' >> ./cmake/targets/quest.cmake
           else
             qpm dependency add --additional-data "$ADDITIONAL_DATA" And64InlineHook
+            echo 'add_compile_definitions(UNITY_2021)' >> ./cmake/targets/quest.cmake
           fi
 
           qpm restore
