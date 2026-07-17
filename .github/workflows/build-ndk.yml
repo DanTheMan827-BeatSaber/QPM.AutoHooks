@@ -126,6 +126,7 @@ jobs:
           resolve_ndk: true
           cache: true
           version: ${{ steps.version.outputs.version}}
+          qpm_version: 'version@^1.5.11'
 
       - name: Add / Restore Dependencies
         if: steps.tag_exists.outputs.exists == 'false'
@@ -155,6 +156,7 @@ jobs:
             qpm dependency add --additional-data "$ADDITIONAL_DATA" flamingo
             qpm dependency add --additional-data "$ADDITIONAL_DATA" capstone
             echo 'add_compile_definitions(UNITY_6)' >> ./cmake/targets/quest.cmake
+            echo 'include_directories(${CMAKE_CURRENT_SOURCE_DIR}/extern/includes/beatsaber-hook/shared)' >> ./cmake/targets/quest.cmake
           else
             qpm dependency add --additional-data "$ADDITIONAL_DATA" And64InlineHook
             echo 'add_compile_definitions(UNITY_2021)' >> ./cmake/targets/quest.cmake
