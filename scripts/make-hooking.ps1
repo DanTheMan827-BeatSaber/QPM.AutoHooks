@@ -31,11 +31,23 @@ if (-Not (Test-Path -Path $externDir -PathType Container)) {
     qpm restore
 }
 
+# If the default (7.x) path doesn't exist, try the 8.x flat path
+if (-Not (Test-Path -Path $inputFile -PathType Leaf)) {
+    $inputFile8x = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath("./extern/includes/beatsaber-hook/shared/hooking.hpp")
+    if (Test-Path -Path $inputFile8x -PathType Leaf) {
+        $inputFile = $inputFile8x
+    }
+}
+
 # Check if the input file exists
 if (-Not (Test-Path -Path $inputFile -PathType Leaf)) {
     Write-Error "Input file '$inputFile' does not exist or is not a file."
     exit 1
 }
+
+# Derive the relative include path (from extern/includes/) for use in the generated #include directive
+$externIncludesDir = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath("./extern/includes")
+$hookingIncludePath = $inputFile.Substring($externIncludesDir.Length + 1) -replace '\\', '/'
 
 # Define the regex pattern to match MAKE_HOOK definitions
 $pattern = (
@@ -122,7 +134,7 @@ $outputContent = @"
 /// Please modify the make-hooking script that generates this file instead.
 
 #pragma once
-#include "beatsaber-hook/shared/utils/hooking.hpp"
+#include "$($hookingIncludePath)"
 
 /// @brief This namespace is internal to the AutoHooks library and should not be used directly.
 /// Anything in this namespace is not part of the public API.  Use the macros provided.
@@ -324,10 +336,18 @@ namespace {
     }
 
 /// @brief Macro to automatically install a hook on dlopen with a logger.
+#ifdef INSTALL_HOOK_DIRECT
+#define INSTALL_HOOK_ON_DLOPEN_WITH_AUTOLOGGER(name_)                                                                              \
+    __attribute((constructor)) void Hook_##name_##_Dlopen_Install() {                                                              \
+        INSTALL_HOOK_DIRECT(::__AutoHooksInternal__::DeferredHooks::logger, name_,                                                 \
+                            reinterpret_cast<void*>(::getRealOffset(Hook_##name_::addr())));                                       \
+    }
+#else
 #define INSTALL_HOOK_ON_DLOPEN_WITH_AUTOLOGGER(name_)                        \
     __attribute((constructor)) void Hook_##name_##_Dlopen_Install() {        \
         INSTALL_HOOK(::__AutoHooksInternal__::DeferredHooks::logger, name_); \
     }
+#endif
 
 /// @brief Macro to automatically install a direct hook on dlopen with a logger.
 #define INSTALL_DIRECT_HOOK_ON_DLOPEN_WITH_AUTOLOGGER(name_, addr_)                        \
@@ -343,10 +363,17 @@ namespace {
     }
 
 /// @brief Macro to install a hook on dlopen with specified logger.
-#define INSTALL_HOOK_ON_DLOPEN(logger, name_)                         \
-    __attribute((constructor)) void Hook_##name_##_Dlopen_Install() { \
-        INSTALL_HOOK(logger, name_);                                  \
+#ifdef INSTALL_HOOK_DIRECT
+#define INSTALL_HOOK_ON_DLOPEN(logger_, name_)                                                                                 \
+    __attribute((constructor)) void Hook_##name_##_Dlopen_Install() {                                                          \
+        INSTALL_HOOK_DIRECT(logger_, name_, reinterpret_cast<void*>(::getRealOffset(Hook_##name_::addr())));                   \
     }
+#else
+#define INSTALL_HOOK_ON_DLOPEN(logger_, name_)                         \
+    __attribute((constructor)) void Hook_##name_##_Dlopen_Install() { \
+        INSTALL_HOOK(logger_, name_);                                  \
+    }
+#endif
 
 /// @brief Macro to install a direct hook on dlopen with specified logger.
 #define INSTALL_DIRECT_HOOK_ON_DLOPEN(logger, name_, addr_)                  \
